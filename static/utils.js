@@ -21,6 +21,7 @@ $('#target').on('submit', function(e){
         return
     }
 
+    // append the bot repsonse to the div
     $('.chat-container').append(`
         <div class="chat-message col-md-5 human-message">
             ${input_message}
