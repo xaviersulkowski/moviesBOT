@@ -30,6 +30,8 @@ docs/_build/
 
 # Pycharm project
 .idea/
+*__MACOS*/
+*data/
 
 # Virtual env
 .env/
