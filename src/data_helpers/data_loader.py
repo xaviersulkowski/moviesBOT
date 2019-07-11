@@ -11,8 +11,16 @@ class MoviesDialoguesDataset(Dataset):
         return len(self.questions)
 
     def __getitem__(self, idx):
+
+        if type(idx) == slice:
+            input_ = self.questions[idx].to_list()
+            target_ = self.answers[idx].to_list()
+        else:
+            input_ = [self.questions[idx]]
+            target_ = [self.answers[idx]]
+
         sample = {
-            'input': self.questions[idx],
-            'target': self.answers[idx]
+            'input': input_,
+            'target': target_
         }
         return sample
