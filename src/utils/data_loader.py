@@ -1,9 +1,10 @@
-import pandas as pd
 import numpy as np
-from torch.utils.data import Dataset
+import pandas as pd
 import toolz as tlz
-from src.data_helpers.utils import normalize_data
-from src.data_helpers.prepare_dialogues import dialogues4movie
+from torch.utils.data import Dataset
+
+from src.utils.utils import normalize_data
+from src.utils.prepare_dialogues import dialogues4movie
 
 
 class MoviesDialoguesDataset(Dataset):

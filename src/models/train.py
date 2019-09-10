@@ -1,13 +1,13 @@
 import os
 import time
-import rootpath as rp
 import torch
+from src.utils.path_utils import project_root
 from torch.nn.utils.rnn import pad_sequence
 from src.models.embedder import Embedder
 from src.models.seq2seq import Encoder, AttentionDecoder
-from src.data_helpers.data_loader import MoviesDialoguesDataset
+from src.utils.data_loader import MoviesDialoguesDataset
 
-rootpath = rp.detect()
+rootpath = project_root()
 cornell_data_set = os.path.join(rootpath, 'data', 'cornell movie-dialogs corpus')
 
 movies_dataset = MoviesDialoguesDataset(cornell_corpus_path=cornell_data_set, movie_name='star wars')

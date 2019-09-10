@@ -1,8 +1,9 @@
-import torch
-import toolz as tlz
-import unicodedata
 import re
+import json
+import torch
+import unicodedata
 import numpy as np
+import toolz as tlz
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -25,3 +26,8 @@ def normalize_data(sentences: np.ndarray):
                            (map, normalize_string)
                            )
 
+
+def read_hyperparameters(path_to_json: str) -> dict:
+    with open(path_to_json) as json_file:
+        data = json.load(json_file)
+    return data
