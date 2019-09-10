@@ -1,34 +1,40 @@
 import os
 import time
 import rootpath as rp
-from torch.nn.utils.rnn import pack_sequence
+import torch
+from torch.nn.utils.rnn import pad_sequence
 from src.models.embedder import Embedder
-from src.models.seq2seq import Encoder, Decoder
+from src.models.seq2seq import Encoder, AttentionDecoder
 from src.data_helpers.data_loader import MoviesDialoguesDataset
 
 rootpath = rp.detect()
 cornell_data_set = os.path.join(rootpath, 'data', 'cornell movie-dialogs corpus')
 
 movies_dataset = MoviesDialoguesDataset(cornell_corpus_path=cornell_data_set, movie_name='star wars')
+batch_size = 3
 
-sentences = movies_dataset[0:2]
 
-ts = time.time()
+lexicon = movies_dataset.create_lexicon()
+input = movies_dataset.questions[:batch_size].values
+output = movies_dataset.answers[:batch_size].values
+
+# define
 embedder = Embedder()
-print(time.time() - ts)
+encoder = Encoder(input_size=len(embedder), hidden_size=256, n_layers=1, bidirectional=False, dropout=1.0)
+decoder = AttentionDecoder(hidden_size=256, output_size=len(lexicon), dropout=1.0, input_size=len(embedder))
 
 ts = time.time()
-embeddings = embedder.embed(sentences['input'])
+inputs = embedder.embed(input)
 print(time.time() - ts)
 
-# embeddings = pack_sequence(embeddings, enforce_sorted=False)
-encoder = Encoder(input_size=len(embedder), hidden_size=256)
-hidden = encoder.init_hidden()
-out, hidden = encoder(embeddings, hidden)
+# encoder
+padded_inputs = pad_sequence(inputs, batch_first=False)
+# out.shape= [max_length x n_sentences x hidden_size]
+# hidden.shape = [(n_layers * num_directions) x n_sentences x hidden_size]
+encoder_output, encoder_hidden = encoder(padded_inputs)
 
-decoder = Decoder(hidden_size=256, output_size=10, max_length=30)
-dec_hid = decoder.init_hidden(len(sentences))
-decoder_hidden = dec_hid
-encoder_outputs = out
-x = hidden
-output, hidden = decoder(dec_hid, out, hidden)
+# decoder
+decoder_hidden = encoder_hidden[:decoder.n_layers]
+# decoder_input = torch.LongTensor([[1. for _ in range(3)]])
+decoder_input = torch.ones((1, batch_size, len(embedder)))
+decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_output)

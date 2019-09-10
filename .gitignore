@@ -32,6 +32,7 @@ docs/_build/
 .idea/
 *__MACOS*/
 *data/
+.DS_Store
 
 # Virtual env
 .env/

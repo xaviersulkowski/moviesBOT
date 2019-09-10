@@ -1,31 +1,33 @@
 import torch
-
-from typing import Union, List
+import numpy as np
 from flair.data import Sentence
-from flair.embeddings import FlairEmbeddings, DocumentRNNEmbeddings
+from flair.embeddings import FlairEmbeddings
 
 
 class Embedder:
     def __init__(self):
-        self.embedder = DocumentRNNEmbeddings([FlairEmbeddings('news-forward-fast')])
+        self.embedder = FlairEmbeddings('news-forward-fast')
         self.embedding_length = self.__len__()
 
     def __len__(self):
         return self.embedder.embedding_length
 
-    def __call__(self, sentences: Union[str, List[str]]):
+    def __call__(self, sentences: np.ndarray):
         return self.embed(sentences)
 
-    def embed(self, sentences: Union[str, List[str]]):
-        if type(sentences) not in [str, list]:
-            raise TypeError(f'Expected str or List[str] input got {type(sentences)}')
+    def embed(self, sentences: np.ndarray):
+        if not isinstance(sentences, np.ndarray):
+            raise TypeError(f'Expected numpy ndarray input got {type(sentences)}')
 
-        if type(sentences) == str:
-            sentences = [sentences]
+        if sentences.ndim != 2:
+            raise TypeError(f'Expected numpy ndarray with 2 dims, try to A.reshape(-1, 1) ')
 
-        sentences = [Sentence(sentence) for sentence in sentences]
+        sentences = [Sentence(sentence[0]) for sentence in sentences]
 
         self.embedder.embed(sentences)
-        embeddings = [sentence.get_embedding().unsqueeze(0) for sentence in sentences]
-        embeddings = torch.cat(embeddings, 0)
-        return embeddings.unsqueeze(0)
+
+        embeddings = []
+        for sentence in sentences:
+            embeddings.append(torch.stack([token.embedding.cpu() for token in sentence]))
+
+        return embeddings
